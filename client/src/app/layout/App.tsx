@@ -1,0 +1,93 @@
+import {useEffect, useState} from "react";
+import {CssBaseline, Container, Box} from "@mui/material";
+import  axios from "axios";
+import Navbar from "./Navbar.tsx";
+import ActivityDashboard from "../../features/activities/dashboard/ActivityDashboard.tsx";
+
+
+export function App() {
+    // create useState to save data
+    // setActivities updates state later
+    //specify type of activities
+    const [activities, setActivities] = useState<Activity[]>([]);
+
+    //for opening activityDetail
+    const[selectedActivity, setSelectedActivity]=useState<Activity | undefined>(undefined);
+
+    //for opening activity form
+    const[editMode, setEditMode]= useState(false);
+
+    //runs once a component render
+    useEffect(() => {
+        //return a promise
+        //use then to unwrap it
+        axios.get<Activity[]>('https://localhost:5001/api/activities')
+            .then(response => setActivities(response.data))
+
+        //cleanup code
+        return () => {
+        };
+    }, []);
+
+    // handle to save selected activity to then pass to child component
+    const handleSelectedActivity = (id: string) => {
+        setSelectedActivity(activities.find(act=>act.id === id));
+    }
+
+    const handleCancelSelectedActivity = ()=>{
+        setSelectedActivity(undefined);
+    }
+
+    const handleOpenForm=(id?:string )=>{
+        if(id) handleSelectedActivity(id);
+        else handleCancelSelectedActivity();
+        setEditMode(true);
+    }
+
+    const handleFormClose = ()=>{
+        setEditMode(false);
+    }
+
+    const handleSubmitForm=(activity:Activity)=>{
+        if(activity.id){
+            setActivities(activities.map(a=>a.id===activity.id ? activity : a));
+        }
+        else{
+            const newActivity = {...activity, id: activities.length.toString()}
+            setSelectedActivity(newActivity);
+            //spread operator
+            setActivities([...activities, newActivity])
+        }
+        setEditMode(false)
+    }
+
+    const handleDeleteActivity=(id:string)=>{
+        setActivities(activities.filter(a=>a.id !== id));
+    }
+
+    return (
+        <Box sx={{backgroundImage: 'radial-gradient(circle at 10% 20%, #e0f7fa 0%, transparent 50%)',
+            bgcolor: '#f0f4f8'}}>
+            <CssBaseline/>
+            <Navbar openForm={handleOpenForm}/>
+            <Container maxWidth='xl' sx={{marginTop: 3}}>
+
+                <ActivityDashboard
+                    activities={activities}
+                    selectActivity={handleSelectedActivity}
+                    cancelSelectActivity = {handleCancelSelectedActivity}
+                    selectedActivity = {selectedActivity}
+                    editMode={editMode}
+                    openForm={handleOpenForm}
+                    closeForm={handleFormClose}
+                    submitForm =  {handleSubmitForm}
+                    deleteActivity = {handleDeleteActivity}
+                />
+
+            </Container>
+
+        </Box>
+    )
+}
+
+
