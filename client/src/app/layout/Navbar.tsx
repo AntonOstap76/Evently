@@ -1,5 +1,5 @@
-import {AppBar, Box, Container, MenuItem, Toolbar, Typography} from "@mui/material";
-import {Group} from "@mui/icons-material";
+import {AppBar, Box, Container, MenuItem, Toolbar} from "@mui/material";
+
 import {NavLink} from "react-router";
 import MenuItemLink from "../../shared/components/MenuItemLink.tsx";
 
@@ -14,8 +14,11 @@ export default function Navbar() {
                     <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
                         <Box>
                             <MenuItem component={NavLink} to='/'>
-                                <Group fontSize="large" />
-                                <Typography variant="h4" fontWeight='bold'>Evently</Typography>
+                                <img
+                                    src="/images/logoW.png"
+                                    alt="Evently"
+                                    style={{ height: 'auto', width: 120, cursor: 'pointer' }}
+                                />
                             </MenuItem>
                         </Box>
                         <Box sx={{display: "flex", gap: 5}}>
