@@ -1,16 +1,13 @@
-import {Box, Button, Paper, TextField, Typography} from "@mui/material";
+import {Box, Button, CircularProgress, Paper, TextField, Typography} from "@mui/material";
 import type {FormEvent} from "react";
 import {useActivities} from "../../../lib/hooks/useActivities.tsx";
+import {Link, useNavigate, useParams} from "react-router";
 
-type Props = {
-    closeForm: () => void
-    activity?: Activity
+export default function ActivityForm() {
 
-}
-
-export default function ActivityForm({closeForm, activity}: Props) {
-
-    const {updateActivity,createActivity} = useActivities();
+    const {id} = useParams();
+    const {updateActivity,createActivity,activity, isLoadingActivity} = useActivities(id);
+    const navigate = useNavigate();
 
     // for handle input values from form
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -26,18 +23,23 @@ export default function ActivityForm({closeForm, activity}: Props) {
         if (activity) {
             data.id = activity.id
             await updateActivity.mutateAsync(data as unknown as Activity)
-            closeForm();
+            navigate(`/activities/${activity.id}`)
         }
         else{
-            await createActivity.mutateAsync(data as unknown as Activity);
-            closeForm();
+            createActivity.mutate(data as unknown as Activity, {
+                onSuccess:(id)=>{
+                    navigate(`/activities/${id}`)
+                }
+            });
         }
     }
+
+    if(isLoadingActivity) return <CircularProgress size="3rem" />
 
     return (
         <Paper sx={{borderRadius: 3, padding: 3}} elevation={3} variant="outlined">
             <Typography variant="h5" gutterBottom color="primary">
-                Create Activity
+                {activity ? 'Edit activity' : 'Create activity'}
             </Typography>
             <Box component="form" onSubmit={handleSubmit} display="flex" flexDirection="column" gap={3}>
                 <TextField name="title" label="Title" defaultValue={activity?.title}/>
@@ -52,7 +54,7 @@ export default function ActivityForm({closeForm, activity}: Props) {
                 <TextField name="city" label="City" defaultValue={activity?.city}/>
                 <TextField name="venue" label="Venue" defaultValue={activity?.venue}/>
                 <Box display="flex" justifyContent="end" gap={3}>
-                    <Button onClick={closeForm} color="inherit" variant="outlined">Cancel</Button>
+                    <Button component={Link} to={'/activities/'} color="inherit" variant="outlined">Cancel</Button>
                     <Button type="submit"
                             color="success"
                             variant="outlined"
