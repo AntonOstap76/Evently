@@ -1,5 +1,8 @@
+using API.Middleware;
 using Application.Activities.Queries;
+using Application.Activities.Validators;
 using Application.Core;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 using Scalar.AspNetCore;
@@ -22,13 +25,22 @@ builder.Services.AddOpenApi();
 builder.Services.AddCors();
 
 // configure from where to find handlers
-builder.Services.AddMediatR(medi => medi.RegisterServicesFromAssemblyContaining<GetActivityList.Handler>());
+builder.Services.AddMediatR(medi =>
+        {
+                medi.RegisterServicesFromAssemblyContaining<GetActivityList.Handler>();
+                medi.AddOpenBehavior(typeof(ValidationBehavior<,>));
+        }
+       );
 
 builder.Services.AddAutoMapper(typeof(MappingProfiles).Assembly);
+
+builder.Services.AddValidatorsFromAssemblyContaining<CreateActivityValidator>();
+builder.Services.AddTransient<ExceptionMiddleware>();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+app.UseMiddleware<ExceptionMiddleware>();
 if (app.Environment.IsDevelopment())
 {
         app.MapOpenApi();
